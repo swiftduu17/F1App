@@ -8,35 +8,44 @@
 import SwiftUI
 
 struct RaceResultCards: View {
+    var title: String
+    var titleImg: String
+    var result: [String]
+    var rowIcon: String
     
     var body: some View {
-        titleCard(title: "Race Results")
+        titleCard(
+            title: title,
+            titleImg: titleImg
+        )
+
         raceResultsList(
-            result: ["Hamilton", "Vettel", "Leclerc", "Bottas", "Sainz", "Piastri", "Norris", "Perez", "Verstappen", "Alonso"],
-            rowIcon: "person.circle.fill"
+            result: result,
+            rowIcon: rowIcon
         )
     }
     
-    @MainActor func titleCard(title: String) -> some View {
+    @MainActor func titleCard(title: String, titleImg: String) -> some View {
         HStack {
             VStack {
                 ZStack {
                     Circle()
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.black.opacity(0.4))
                         .frame(width: 100, height: 100)
                         .padding()
-                    Image(systemName: "car.fill") // or app logo, something nicer
+                    Image(systemName: titleImg)
                         .resizable()
                         .scaledToFit()
-                        .foregroundStyle(.red)
                         .frame(width: 75, height: 75)
-
+                        .foregroundStyle(.white.opacity(0.5))
                 }
                 Text(title)
                     .font(.headline)
                     .padding([.bottom], 20)
+                    .padding(.horizontal, 8)
             }
             .frame(width: .infinity, height: .infinity, alignment: .center)
+            .foregroundStyle(.white)
 
             ZStack {
                 Rectangle()
@@ -47,7 +56,7 @@ struct RaceResultCards: View {
             }
         }
         .background(
-            LinearGradient(colors: [.red, .black.opacity(0.9), .black], startPoint: .bottomLeading, endPoint: .topTrailing)
+            LinearGradient(colors: [.black.opacity(0.9), .red.opacity(0.9), .yellow], startPoint: .bottomLeading, endPoint: .topTrailing)
         )
         .cornerRadius(12)
         .padding([.top, .bottom, .horizontal], 2)
@@ -57,33 +66,48 @@ struct RaceResultCards: View {
         List {
             ForEach(0..<10) { index in
                 HStack {
-                    Image(systemName: rowIcon)
-                        .resizable()
-                        .frame(width: 50, height: 50, alignment: .leading)
-                        .scaledToFill()
-                        .padding(.trailing, 16)
-
                     HStack {
                         Text("P\(index + 1)")
                             .bold()
                             .font(.caption)
+                        Image(systemName: rowIcon)
+                            .resizable()
+                            .frame(width: 50, height: 50, alignment: .trailing)
+                            .scaledToFit()
+                            .padding(.trailing, 0)
                         Text("\(result[index])")
                             .font(.title3)
-                            .foregroundStyle(.white)
                     }
+                    .foregroundStyle(.white)
+
                 }
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .background(
-                LinearGradient(colors: [.blue, .red], startPoint: .leading, endPoint: .trailing)
+                LinearGradient(colors: [.black.opacity(0.75), .red, .yellow], startPoint: .leading, endPoint: .trailing)
             )
             .cornerRadius(12)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 #Preview {
-    RaceResultCards()
+    RaceResultCards(
+        title: "Monaco Grand Prix Race Results",
+        titleImg: "car.fill",
+        result: [
+            "Hamilton",
+            "Vettel",
+            "Leclerc",
+            "Bottas",
+            "Sainz",
+            "Piastri",
+            "Norris",
+            "Perez",
+            "Verstappen",
+            "Alonso"
+        ],
+        rowIcon: "person.circle.fill"
+    )
 }
