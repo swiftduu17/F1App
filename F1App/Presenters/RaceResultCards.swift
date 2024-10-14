@@ -47,12 +47,18 @@ struct RaceResultCards: View {
                         .frame(width: 75, height: 75)
                         .foregroundStyle(.white.opacity(0.5))
                 }
-                Text(title)
+                Text(title.uppercased())
                     .frame(width: UIScreen.main.bounds.width, alignment: .center)
                     .font(.title)
                     .bold()
                     .padding([.bottom], 20)
                     .padding(.horizontal, 8)
+                Text("\(race.date ?? ""), \(race.time ?? "")")
+                    .font(.callout)
+                    .padding()
+                    .frame(width: UIScreen.main.bounds.width, alignment: .center)
+
+                    
             }
             .frame(width: .infinity, height: .infinity, alignment: .center)
             .foregroundStyle(.white)
@@ -79,20 +85,35 @@ struct RaceResultCards: View {
                     HStack {
                         Text("P\(results[index].position ?? "\(index + 1)")")
                             .bold()
-                            .font(.caption)
+                            .font(.headline)
                         Image(systemName: rowIcon)
                             .resizable()
                             .frame(width: 40, height: 40, alignment: .trailing)
                             .scaledToFit()
                             .padding(.trailing, 0)
                         Text("\(result.driver?.familyName ?? "")")
-                            .font(.title3)
+                            .font(.title2)
                     }
                     .foregroundStyle(.white)
-
                 }
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                
+                HStack {
+                    Text("\(result.constructor?.name ?? "")")
+                    Text("\(result.constructor?.nationality ?? "")")
+                    Text("Qualifying Position :\(result.grid ?? "")")
+                }
+                .foregroundStyle(.white)
+                .font(.caption)
+                .bold()
+                .padding()
+
+                Text("Points :\(result.points ?? "")")
+                    .foregroundStyle(.white)
+                    .font(.caption)
+                    .bold()
+                    .padding()
             }
             .background(
                 LinearGradient(colors: [.black.opacity(0.75), .red, .yellow.opacity(0.75)], startPoint: .leading, endPoint: .trailing)
