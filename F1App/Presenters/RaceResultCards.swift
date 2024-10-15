@@ -9,8 +9,8 @@ import SwiftUI
 
 struct RaceResultCards: View {
     enum Constants {
-        static let titleImg: String = "car"
-        static let rowIcon: String = "person.circle.fill"
+        static let titleImg: String = "flag"
+        static let rowIcon: String = "flag.circle"
         static let fallbackTitle: String = "Grand Prix Results"
     }
     
@@ -23,14 +23,13 @@ struct RaceResultCards: View {
                 title: race.raceName ?? Constants.fallbackTitle,
                 titleImg: Constants.titleImg
             )
-            .background(.black)
-            .cornerRadius(12)
-
             raceResultsList(
                 results: viewModel.raceResults2,
                 rowIcon: Constants.rowIcon
             )
         }
+        .background(Color.black)
+        .edgesIgnoringSafeArea(.all)
     }
     
     @MainActor func titleCard(title: String, titleImg: String) -> some View {
@@ -39,88 +38,78 @@ struct RaceResultCards: View {
                 ZStack {
                     Circle()
                         .foregroundStyle(.black.opacity(0.4))
-                        .frame(width: 100, height: 100)
-                        .padding()
+                        .frame(width: 75, height: 75)
                     Image(systemName: titleImg)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 75, height: 75)
+                        .frame(width: 50, height: 50)
                         .foregroundStyle(.white.opacity(0.5))
                 }
+
                 Text(title.uppercased())
                     .frame(width: UIScreen.main.bounds.width, alignment: .center)
-                    .font(.title)
+                    .font(.title2)
                     .bold()
-                    .padding([.bottom], 20)
+                    .padding([.bottom], 0)
                     .padding(.horizontal, 8)
                 Text("\(race.date ?? ""), \(race.time ?? "")")
                     .font(.callout)
-                    .padding()
+                    .padding(.bottom)
                     .frame(width: UIScreen.main.bounds.width, alignment: .center)
-
-                    
             }
             .frame(width: .infinity, height: .infinity, alignment: .center)
             .foregroundStyle(.white)
-
-            ZStack {
-                Rectangle()
-                    .frame(width: .infinity, height: 100)
-                    .ignoresSafeArea()
-                    .foregroundStyle(.clear)
-                
-            }
         }
         .background(
-            LinearGradient(colors: [.black.opacity(0.9), .red.opacity(0.9), .yellow.opacity(0.75)], startPoint: .bottomLeading, endPoint: .topTrailing)
+            LinearGradient(colors: [.black.opacity(0.9), .red.opacity(0.5), .black.opacity(0.75)], startPoint: .bottomLeading, endPoint: .topTrailing)
         )
         .padding([.top, .bottom, .horizontal], 2)
     }
     
     @MainActor func raceResultsList(results: [Result], rowIcon: String) -> some View {
-        List {
-            ForEach(results.indices, id: \.self) { index in
-                let result = results[index]
-                HStack {
-                    HStack {
-                        Text("P\(results[index].position ?? "\(index + 1)")")
-                            .bold()
-                            .font(.headline)
-                        Image(systemName: rowIcon)
-                            .resizable()
-                            .frame(width: 40, height: 40, alignment: .trailing)
-                            .scaledToFit()
-                            .padding(.trailing, 0)
-                        Text("\(result.driver?.familyName ?? "")")
+        ZStack {
+            Color.black.opacity(0.5)
+                .edgesIgnoringSafeArea(.all)
+            
+            List {
+                ForEach(results.indices, id: \.self) { index in
+                    let result = results[index]
+                    VStack {
+                        HStack {
+                            HStack {
+                                Image(systemName: rowIcon)
+                                    .resizable()
+                                    .frame(width: 40, height: 40, alignment: .trailing)
+                                    .scaledToFit()
+                                    .padding(.trailing, 10)
+                                    .padding([.leading, .top], 8)
+                                Text("\(result.driver?.givenName ?? "") \(result.driver?.familyName ?? "")")
+                                    .bold()
+                            }
                             .font(.title2)
+                            .foregroundStyle(.white)
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Group {
+                            Text("\(result.constructor?.name ?? "") \(result.status?.lowercased() ?? "") P\(result.position ?? "\(index + 1)")")
+                            Text("Qualified P\(result.grid ?? "")")
+                            Text("Points :\(result.points ?? "")")
+                        }
+                        .padding([.horizontal, .top], 12)
+                        .padding([.bottom], 8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundStyle(.white)
+                        .font(.subheadline)
+                        .bold()
                     }
-                    .foregroundStyle(.white)
                 }
-                .padding(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                
-                HStack {
-                    Text("\(result.constructor?.name ?? "")")
-                    Text("\(result.constructor?.nationality ?? "")")
-                    Text("Qualifying Position :\(result.grid ?? "")")
-                }
-                .foregroundStyle(.white)
-                .font(.caption)
-                .bold()
-                .padding()
-
-                Text("Points :\(result.points ?? "")")
-                    .foregroundStyle(.white)
-                    .font(.caption)
-                    .bold()
-                    .padding()
+                .background(.black)
+                .cornerRadius(8)
             }
-            .background(
-                LinearGradient(colors: [.black.opacity(0.75), .red, .yellow.opacity(0.75)], startPoint: .leading, endPoint: .trailing)
-            )
-            .cornerRadius(12)
+            .scrollContentBackground(.hidden)
         }
-        .foregroundStyle(.black)
     }
 }
 
