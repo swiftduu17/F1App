@@ -13,10 +13,10 @@ struct RaceResultCards: View {
         static let rowIcon: String = "person.circle"
         static let fallbackTitle: String = "Grand Prix Results"
     }
-    
+
     @ObservedObject var viewModel: HomeViewModel
     let race: Race
-    
+
     private var customGrandient: LinearGradient {
         LinearGradient(colors: [
             .black.opacity(0.9),
@@ -27,27 +27,23 @@ struct RaceResultCards: View {
            endPoint: .topTrailing
         )
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             titleCard(
                 title: race.raceName ?? Constants.fallbackTitle,
                 titleImg: Constants.titleImg
             )
-            raceResultsList(
-                results: viewModel.raceResults2,
-                rowIcon: Constants.rowIcon
-            )
+            raceResultsList
         }
         .background(Color.black)
         .edgesIgnoringSafeArea(.all)
     }
-    
+
     @MainActor func titleCard(title: String, titleImg: String) -> some View {
         HStack {
             VStack {
                 HStack {
-                    Spacer()
                     ZStack {
                         Circle()
                             .foregroundStyle(.black.opacity(0.4))
@@ -78,13 +74,21 @@ struct RaceResultCards: View {
         .background(customGrandient)
         .padding([.top, .bottom, .horizontal], 2)
     }
-    
-    @MainActor func raceResultsList(results: [Result], rowIcon: String) -> some View {
+
+    @MainActor private var raceResultsList: some View {
         ZStack {
             Color.black.opacity(0.5)
                 .edgesIgnoringSafeArea(.all)
-            
-            List {
+            resultsScrollView(
+                results: viewModel.raceResults2,
+                rowIcon: Constants.rowIcon
+            )
+        }
+    }
+
+    @ViewBuilder private func resultsScrollView(results: [Result], rowIcon: String) -> some View {
+        ScrollView {
+            LazyVStack {
                 ForEach(results.indices, id: \.self) { index in
                     let result = results[index]
                     
@@ -92,32 +96,18 @@ struct RaceResultCards: View {
                         standing.givenName == result.driver?.givenName &&
                         standing.familyName == result.driver?.familyName
                     }
-                    
+
                     VStack {
                         HStack {
                             HStack {
                                 if let imageURL = driverStanding?.imageUrl, !imageURL.isEmpty {
                                     AsyncImage(url: URL(string: imageURL)) { image in
-                                        image.resizable()
-                                            .frame(width: 40, height: 40)
-                                            .scaledToFit()
-                                            .padding(.trailing, 10)
-                                            .padding([.leading, .top], 8)
+                                        asyncImage(image: image)
                                     } placeholder: {
-                                        Image(systemName: rowIcon)
-                                            .resizable()
-                                            .frame(width: 40, height: 40)
-                                            .scaledToFit()
-                                            .padding(.trailing, 10)
-                                            .padding([.leading, .top], 8)
+                                        placeHolderImage(rowIcon: rowIcon)
                                     }
                                 } else {
-                                    Image(systemName: rowIcon)
-                                        .resizable()
-                                        .frame(width: 40, height: 40)
-                                        .scaledToFit()
-                                        .padding(.trailing, 10)
-                                        .padding([.leading, .top], 8)
+                                    placeHolderImage(rowIcon: rowIcon)
                                 }
 
                                 Text("\(result.driver?.givenName ?? "") \(result.driver?.familyName ?? "")")
@@ -127,26 +117,57 @@ struct RaceResultCards: View {
                             .foregroundStyle(.white)
                         }
                         .padding(8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         
-                        Group {
-                            Text("\(result.constructor?.name ?? "") \(result.status?.lowercased() ?? "") P\(result.position ?? "\(index + 1)")")
-                            Text("Qualified P\(result.grid ?? "")")
-                            Text("Points :\(result.points ?? "")")
-                        }
-                        .padding([.horizontal, .top], 12)
-                        .padding([.bottom], 8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .foregroundStyle(.white)
-                        .font(.subheadline)
-                        .bold()
+                        raceInfo(
+                            result: result,
+                            index: index
+                        )
                     }
                 }
                 .background(.black)
                 .cornerRadius(8)
             }
-            .scrollContentBackground(.hidden)
         }
+        .scrollContentBackground(.hidden)
+    }
+
+    @ViewBuilder private func asyncImage(image: Image) -> some View {
+        ZStack {
+            image
+                .resizable()
+                .scaledToFit()
+                .padding(.trailing, 10)
+                .padding([.leading, .top], 8)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(LinearGradient(colors: [.red, .black, .black, .black], startPoint: .bottomLeading, endPoint: .topTrailing), lineWidth: 12)
+                )
+        }
+    }
+
+    @ViewBuilder private func raceInfo(result: Result, index: Int) -> some View {
+        Group {
+            Text("\(result.constructor?.name ?? "") \(result.status?.lowercased() ?? ""): P\(result.position ?? "\(index + 1)")")
+            Text("Qualified: P\(result.grid ?? "")")
+            Text("Points: \(result.points ?? "")")
+        }
+        .padding([.horizontal, .top], 12)
+        .padding([.bottom], 8)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .foregroundStyle(.white)
+        .font(.subheadline)
+        .bold()
+    }
+    
+    @ViewBuilder private func placeHolderImage(rowIcon: String) -> some View {
+        Image(systemName: rowIcon)
+            .resizable()
+            .frame(width: 40, height: 40)
+            .scaledToFit()
+            .padding(.trailing, 10)
+            .padding([.leading, .top], 8)
     }
 }
 
