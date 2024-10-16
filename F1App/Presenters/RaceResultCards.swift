@@ -9,13 +9,24 @@ import SwiftUI
 
 struct RaceResultCards: View {
     enum Constants {
-        static let titleImg: String = "flag"
-        static let rowIcon: String = "flag.circle"
+        static let titleImg: String = "flag.pattern.checkered.circle"
+        static let rowIcon: String = "person.circle"
         static let fallbackTitle: String = "Grand Prix Results"
     }
     
     @ObservedObject var viewModel: HomeViewModel
     let race: Race
+    
+    private var customGrandient: LinearGradient {
+        LinearGradient(colors: [
+            .black.opacity(0.9),
+                .red.opacity(0.5),
+                .black.opacity(0.75)
+        ],
+           startPoint: .bottomLeading,
+           endPoint: .topTrailing
+        )
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -35,15 +46,19 @@ struct RaceResultCards: View {
     @MainActor func titleCard(title: String, titleImg: String) -> some View {
         HStack {
             VStack {
-                ZStack {
-                    Circle()
-                        .foregroundStyle(.black.opacity(0.4))
-                        .frame(width: 75, height: 75)
-                    Image(systemName: titleImg)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .foregroundStyle(.white.opacity(0.5))
+                HStack {
+                    Spacer()
+                    ZStack {
+                        Circle()
+                            .foregroundStyle(.black.opacity(0.4))
+                            .frame(width: 75, height: 75)
+                        Image(systemName: titleImg)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+                    .padding()
                 }
 
                 Text(title.uppercased())
@@ -52,17 +67,15 @@ struct RaceResultCards: View {
                     .bold()
                     .padding([.bottom], 0)
                     .padding(.horizontal, 8)
+
                 Text("\(race.date ?? ""), \(race.time ?? "")")
                     .font(.callout)
                     .padding(.bottom)
                     .frame(width: UIScreen.main.bounds.width, alignment: .center)
             }
-            .frame(width: .infinity, height: .infinity, alignment: .center)
             .foregroundStyle(.white)
         }
-        .background(
-            LinearGradient(colors: [.black.opacity(0.9), .red.opacity(0.5), .black.opacity(0.75)], startPoint: .bottomLeading, endPoint: .topTrailing)
-        )
+        .background(customGrandient)
         .padding([.top, .bottom, .horizontal], 2)
     }
     
@@ -74,15 +87,39 @@ struct RaceResultCards: View {
             List {
                 ForEach(results.indices, id: \.self) { index in
                     let result = results[index]
+                    
+                    let driverStanding = viewModel.driverStandings.first { standing in
+                        standing.givenName == result.driver?.givenName &&
+                        standing.familyName == result.driver?.familyName
+                    }
+                    
                     VStack {
                         HStack {
                             HStack {
-                                Image(systemName: rowIcon)
-                                    .resizable()
-                                    .frame(width: 40, height: 40, alignment: .trailing)
-                                    .scaledToFit()
-                                    .padding(.trailing, 10)
-                                    .padding([.leading, .top], 8)
+                                if let imageURL = driverStanding?.imageUrl, !imageURL.isEmpty {
+                                    AsyncImage(url: URL(string: imageURL)) { image in
+                                        image.resizable()
+                                            .frame(width: 40, height: 40)
+                                            .scaledToFit()
+                                            .padding(.trailing, 10)
+                                            .padding([.leading, .top], 8)
+                                    } placeholder: {
+                                        Image(systemName: rowIcon)
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                            .scaledToFit()
+                                            .padding(.trailing, 10)
+                                            .padding([.leading, .top], 8)
+                                    }
+                                } else {
+                                    Image(systemName: rowIcon)
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                        .scaledToFit()
+                                        .padding(.trailing, 10)
+                                        .padding([.leading, .top], 8)
+                                }
+
                                 Text("\(result.driver?.givenName ?? "") \(result.driver?.familyName ?? "")")
                                     .bold()
                             }
