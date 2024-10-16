@@ -111,9 +111,14 @@ struct RaceResultCards: View {
                     } else {
                         placeHolderImage(rowIcon: rowIcon)
                     }
-
-                    Text("\(result.driver?.givenName ?? "") \(result.driver?.familyName ?? "")")
-                        .bold()
+                    HStack {
+                        Text("\(result.driver?.givenName ?? "") \(result.driver?.familyName ?? "")")
+                            .bold()
+                        Text("#\(result.driver?.permanentNumber ?? "")")
+                            .font(.caption)
+                            .frame(alignment: .topTrailing)
+                    }
+                  
                 }
                 .font(.title)
                 .foregroundStyle(.white)
