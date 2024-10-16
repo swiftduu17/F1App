@@ -8,31 +8,15 @@
 import SwiftUI
 
 struct RaceResultCards: View {
-    enum Constants {
-        static let titleImg: String = "flag.pattern.checkered.circle"
-        static let rowIcon: String = "person.circle"
-        static let fallbackTitle: String = "Grand Prix Results"
-    }
-
     @ObservedObject var viewModel: HomeViewModel
+    @ObservedObject var resultsViewModel: RaceResultViewModel
     let race: Race
-
-    private var customGrandient: LinearGradient {
-        LinearGradient(colors: [
-            .black.opacity(0.9),
-                .red.opacity(0.5),
-                .black.opacity(0.75)
-        ],
-           startPoint: .bottomLeading,
-           endPoint: .topTrailing
-        )
-    }
 
     var body: some View {
         VStack(spacing: 0) {
             titleCard(
-                title: race.raceName ?? Constants.fallbackTitle,
-                titleImg: Constants.titleImg
+                title: race.raceName ?? RaceResultViewModel.Constants.fallbackTitle,
+                titleImg: RaceResultViewModel.Constants.titleImg
             )
             raceResultsList
         }
@@ -72,7 +56,7 @@ struct RaceResultCards: View {
             }
             .foregroundStyle(.white)
         }
-        .background(customGrandient)
+        .background(resultsViewModel.customGrandient)
         .padding([.top, .bottom, .horizontal], 2)
     }
 
@@ -91,15 +75,13 @@ struct RaceResultCards: View {
                 ForEach(results.indices, id: \.self) { index in
                     let result = results[index]
 
-                    let driverStanding = viewModel.driverStandings.first { standing in
-                        standing.givenName == result.driver?.givenName &&
-                        standing.familyName == result.driver?.familyName
-                    }
-
                     driverInfo(
                         result: result,
-                        driverStanding: driverStanding,
-                        rowIcon: Constants.rowIcon,
+                        driverStanding: resultsViewModel.matchDriver(
+                            viewModel: viewModel,
+                            result: result
+                        ),
+                        rowIcon: RaceResultViewModel.Constants.rowIcon,
                         index: index
                     )
                 }
@@ -174,9 +156,22 @@ struct RaceResultCards: View {
             .padding(.bottom, 0)
 
         Group {
-            Text("\(result.status ?? ""): P\(result.position ?? "\(index + 1)")")
-            Text("Qualified: P\(result.grid ?? "")")
-            Text("Points: \(result.points ?? "")")
+            HStack {
+                Image(systemName: RaceResultViewModel.Constants.titleImg)
+                Text("\(result.status ?? ""): P\(result.position ?? "\(index + 1)")")
+            }
+            HStack {
+                Image(systemName: RaceResultViewModel.Constants.gridPositionIcon)
+                Text("Qualified: P\(result.grid ?? "")")
+            }
+            HStack {
+                Image(systemName: RaceResultViewModel.Constants.fastestLapIcon)
+                Text("Fastest Lap: \(result.fastestLap?.time?.time ?? ""), Lap: \(result.fastestLap?.lap ?? "")")
+            }
+            HStack {
+                Image(systemName: RaceResultViewModel.Constants.pointsIcon)
+                Text("Points: \(result.points ?? "")")
+            }
             Divider()
         }
         .padding(.horizontal, 24)
@@ -184,7 +179,7 @@ struct RaceResultCards: View {
         .padding([.bottom], 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundStyle(.white)
-        .font(.subheadline)
+        .font(.headline)
         .bold()
     }
     

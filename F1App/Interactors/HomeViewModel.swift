@@ -9,6 +9,7 @@ import SwiftUI
 
 @MainActor
 class HomeViewModel: ObservableObject {
+    @Published var raceResultViewModel: RaceResultViewModel? = nil
     @Published var isLoading = false
     @Published var isLoadingDrivers = false
     @Published var isLoadingConstructors = false
@@ -32,10 +33,24 @@ class HomeViewModel: ObservableObject {
         }
     }
     
+    enum Constant: String {
+        case homescreenTitle = "Grid Pulse"
+        case wdcLabel = "World Drivers' Championship Standings"
+        case grandPrixLabel = "Grand Prix Results"
+    }
+    
     init(
         seasonYear: String
     ) {
         self.seasonYear = seasonYear
+        Task {
+            await initializeData()
+        }
+    }
+    
+    private func initializeData() async {
+        await reloadDataForNewSeason()
+        self.raceResultViewModel = RaceResultViewModel()
     }
     
     private func returnYear() -> Int {
