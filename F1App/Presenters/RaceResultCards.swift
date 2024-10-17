@@ -153,7 +153,8 @@ struct RaceResultCards: View {
                         )
                 )
         }
-        .padding([.top, .horizontal], 20)
+        .padding(.horizontal, 20)
+        .padding(.top, 25)
     }
 
     @ViewBuilder private func raceInfo(result: Result, index: Int) -> some View {
