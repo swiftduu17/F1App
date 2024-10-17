@@ -81,12 +81,8 @@ struct HomeScreen: View {
                 .frame(width: UIScreen.main.bounds.width, alignment: .leading)
         }
         .sheet(isPresented: $isSheetPresented) {
-            if #available(iOS 16.0, *) {
-                MyAccount(viewModel: myAccountViewModel)
-                    .presentationDetents([.height(100)])
-            } else {
-                MyAccount(viewModel: myAccountViewModel)
-            }
+            MyAccount(viewModel: myAccountViewModel)
+                .presentationDetents([.height(100)])
         }
     }
 
@@ -102,9 +98,16 @@ struct HomeScreen: View {
     }
 
     @ViewBuilder private var QueriesCollection: some View {
+        driversCollection
+        constructorsCollection
+        racesCollection
+    }
+    
+    @ViewBuilder private var driversCollection: some View {
         ScrollView(.horizontal) {
             if viewModel.isLoadingDrivers {
                 CustomProgressView()
+                    .frame(height: 250, alignment: .center)
             } else {
                 LazyHGrid(
                     rows: [GridItem(.fixed(UIScreen.main.bounds.width))],
@@ -123,10 +126,13 @@ struct HomeScreen: View {
                 }
             }
         }
-
+    }
+    
+    @ViewBuilder private var constructorsCollection: some View {
         ScrollView(.horizontal) {
             if viewModel.isLoadingConstructors {
                 CustomProgressView()
+                    .frame(height: 250, alignment: .center)
             } else {
                 LazyHGrid(
                     rows: [GridItem(.fixed(UIScreen.main.bounds.width))],
@@ -134,7 +140,7 @@ struct HomeScreen: View {
                 ) {
                     ForEach(Array(viewModel.constructorStandings.enumerated()), id: \.element) { index,constructorStanding in
                         ConstructorsCards(
-                            wccPosition: 
+                            wccPosition:
                                 "WCC Position: \(constructorStanding.position ?? "⏳")",
                             wccPoints: "WCC Points: \(constructorStanding.points ?? "⏳")",
                             constructorWins: "Wins: \(constructorStanding.wins ?? "⏳")",
@@ -146,10 +152,13 @@ struct HomeScreen: View {
                 }
             }
         }
-
+    }
+    
+    @ViewBuilder private var racesCollection: some View {
         ScrollView(.horizontal) {
-            if viewModel.isLoading {
+            if viewModel.isLoadingGrandPrix {
                 CustomProgressView()
+                    .frame(height: 250, alignment: .center)
             } else {
                 LazyHGrid(
                     rows: [GridItem(.fixed(UIScreen.main.bounds.width))],
@@ -186,7 +195,7 @@ struct HomeScreen: View {
                 }
             }
         }
-    } // end queriescollection
+    }
 }
 
 #Preview {
