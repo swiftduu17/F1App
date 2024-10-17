@@ -85,13 +85,15 @@ struct RaceResultCards: View {
                         index: index
                     )
                 }
-                .background(.black)
-                .cornerRadius(8)
+                .background(
+                    resultsViewModel.customGrandient
+                        .cornerRadius(24)
+                )
             }
         }
         .scrollContentBackground(.hidden)
     }
-    
+
     @ViewBuilder private func driverInfo(
         result: Result,
         driverStanding: DriverStanding?,
@@ -111,14 +113,18 @@ struct RaceResultCards: View {
                     } else {
                         placeHolderImage(rowIcon: rowIcon)
                     }
-                    HStack {
+                    VStack {
                         Text("\(result.driver?.givenName ?? "") \(result.driver?.familyName ?? "")")
                             .bold()
                         Text("#\(result.driver?.permanentNumber ?? "")")
+                            .bold()
                             .font(.caption)
                             .frame(alignment: .topTrailing)
+                        Text("\(result.constructor?.name ?? "")")
+                            .font(.title2)
+                            .bold()
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
-                  
                 }
                 .font(.title)
                 .foregroundStyle(.white)
@@ -138,28 +144,19 @@ struct RaceResultCards: View {
                 .resizable()
                 .scaledToFit()
                 .aspectRatio(contentMode: .fill)
-                .padding(.trailing, 10)
-                .padding([.leading, .top], 8)
                 .clipShape(Rectangle())
                 .overlay(
                     Rectangle()
                         .stroke(
-                            LinearGradient(colors: [.black.opacity(0.9), .black.opacity(0.9), .red.opacity(0.7), .red.opacity(0.75)], startPoint: .bottomLeading, endPoint: .topTrailing),
-                            lineWidth: 24
+                            .black,
+                            lineWidth: 0
                         )
                 )
         }
+        .padding([.top, .horizontal], 20)
     }
 
     @ViewBuilder private func raceInfo(result: Result, index: Int) -> some View {
-        Text("\(result.constructor?.name ?? "")")
-            .font(.title2)
-            .bold()
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, 24)
-            .padding(.top, 0)
-            .padding(.bottom, 0)
-
         Group {
             HStack {
                 Image(systemName: RaceResultViewModel.Constants.titleImg)
@@ -177,7 +174,6 @@ struct RaceResultCards: View {
                 Image(systemName: RaceResultViewModel.Constants.pointsIcon)
                 Text("Points: \(result.points ?? "")")
             }
-            Divider()
         }
         .padding(.horizontal, 24)
         .padding(.top, 8)
@@ -187,7 +183,7 @@ struct RaceResultCards: View {
         .font(.headline)
         .bold()
     }
-    
+
     @ViewBuilder private func placeHolderImage(rowIcon: String) -> some View {
         Image(systemName: rowIcon)
             .resizable()

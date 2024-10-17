@@ -21,13 +21,14 @@ class RaceResultViewModel: ObservableObject {
     init() { /* No Op*/ }
 
     var customGrandient: LinearGradient {
-        LinearGradient(colors: [
-            .black.opacity(0.9),
+        LinearGradient(
+            colors: [
+                .black.opacity(0.9),
                 .red.opacity(0.5),
                 .black.opacity(0.75)
-        ],
-           startPoint: .bottomLeading,
-           endPoint: .topTrailing
+            ],
+            startPoint: .bottomLeading,
+            endPoint: .topTrailing
         )
     }
 
