@@ -9,6 +9,7 @@ import SwiftUI
 
 @MainActor
 class HomeViewModel: ObservableObject {
+    private let networkClient: NetworkClient
     @Published var raceResultViewModel: RaceResultViewModel? = nil
     @Published var isLoadingGrandPrix = false
     @Published var isLoadingDrivers = false
@@ -41,8 +42,10 @@ class HomeViewModel: ObservableObject {
     }
     
     init(
+        networkClient: NetworkClient,
         seasonYear: String
     ) {
+        self.networkClient = networkClient
         self.seasonYear = seasonYear
         Task {
             await initializeData()
@@ -141,11 +144,13 @@ class HomeViewModel: ObservableObject {
     }
     
     @MainActor func loadAllRacesForSeason(year: String) async {
+        let nc = self.networkClient
         isLoadingGrandPrix = true
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
-                let raceResults = try await F1ApiRoutes().fetchRaceSchedule(forYear: year)
-                self.races = raceResults?.mrData?.raceTable?.races ?? []
+                let raceResults = try await nc.fetchRaceSchedule(forYear: year)
+                self.races = raceResults.mrData?.raceTable?.races ?? []
                 print("NUMBER OF RACES \(races.count)")
             } catch {
                 self.errorMessage = "Failed to fetch data: \(error.localizedDescription)"
@@ -155,47 +160,60 @@ class HomeViewModel: ObservableObject {
     }
     
     @MainActor func loadRaceResultsForYear(year: String) async {
+        let nc = self.networkClient
         isLoadingRaceResults = true
-        for index in Range(1...races.count + 1) {
-            do {
-                let raceResultsData = try await F1ApiRoutes().fetchRaceResults(
-                    forYear: year,
-                    round: "\(index)"
-                )
-                raceWinner.append(
-                    "\(raceResultsData?.mrData?.raceTable?.races?.first?.results?.first?.driver?.givenName ?? "") \(raceResultsData?.mrData?.raceTable?.races?.first?.results?.first?.driver?.familyName ?? "")"
-                )
-                winningConstructor.append(
-                    raceResultsData?.mrData?.raceTable?.races?.first?.results?.first?.constructor?.name ?? ""
-                )
-                winningTime.append(
-                    raceResultsData?.mrData?.raceTable?.races?.first?.results?.first?.time?.time ?? ""
-                )
-                winnerFastestLap.append(
-                    raceResultsData?.mrData?.raceTable?.races?.first?.results?.first?.fastestLap?.time?.time ?? ""
-                )
-            } catch {
-                print("failed to fetch data \(error.localizedDescription)")
+        Task { [weak self] in
+            guard let self else { return }
+
+            for index in Range(1...races.count + 1) {
+                do {
+                    let raceResultsData = try await nc.fetchRaceResults(
+                        season: year,
+                        round: "\(index)"
+                    )
+                    raceWinner.append(
+                        "\(raceResultsData.mrData?.raceTable?.races?.first?.results?.first?.driver?.givenName ?? "") \(raceResultsData.mrData?.raceTable?.races?.first?.results?.first?.driver?.familyName ?? "")"
+                    )
+                    winningConstructor.append(
+                        raceResultsData.mrData?.raceTable?.races?.first?.results?.first?.constructor?.name ?? ""
+                    )
+                    winningTime.append(
+                        raceResultsData.mrData?.raceTable?.races?.first?.results?.first?.time?.time ?? ""
+                    )
+                    winnerFastestLap.append(
+                        raceResultsData.mrData?.raceTable?.races?.first?.results?.first?.fastestLap?.time?.time ?? ""
+                    )
+                } catch {
+                    print("failed to fetch data \(error.localizedDescription)")
+                }
             }
         }
+
         isLoadingRaceResults = false
     }
     
     @MainActor func fetchRaceResults(season: String, round: String) async {
-        do {
-            let results = try await F1ApiRoutes().fetchRaceResults(
-                forYear: season,
-                round: round
-            )
-            if let race = results?.mrData?.raceTable?.races?.first {
-                self.raceResults2 = race.results ?? []
-                
-                if let winner = race.results?.first {
-                    self.winner = "\(winner.driver?.givenName ?? "") \(winner.driver?.familyName ?? "")"
+        let nc = self.networkClient
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let results = try await nc.fetchRaceResults(
+                    season: season,
+                    round: round
+                )
+
+                if let race = results.mrData?.raceTable?.races?.first {
+                    await MainActor.run {
+                        self.raceResults2 = race.results ?? []
+
+                        if let winner = race.results?.first {
+                            self.winner = "\(winner.driver?.givenName ?? "") \(winner.driver?.familyName ?? "")"
+                        }
+                    }
                 }
+            } catch {
+                print("failed to fetch data \(error.localizedDescription)")
             }
-        } catch {
-            print("failed to fetch data \(error.localizedDescription)")
         }
     }
 }

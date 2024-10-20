@@ -12,7 +12,7 @@ import Foundation
  working on adding results that show up for drivers or teams or as a standalone not sure yet
  */
 
-struct Root: Decodable {
+struct Root: Codable {
     let mrData: MRData?
 
     enum CodingKeys: String, CodingKey {
@@ -20,7 +20,7 @@ struct Root: Decodable {
     }
 }
 
-struct MRData: Decodable {
+struct MRData: Codable {
     let raceTable: RaceTable?
     let standingsTable: StandingsTable?
     let series: String?
@@ -40,7 +40,7 @@ struct MRData: Decodable {
     }
 }
 
-struct Time: Decodable {
+struct Time: Codable {
     let millis: String?
     let time: String?
     
@@ -49,7 +49,7 @@ struct Time: Decodable {
     }
 }
 
-struct RaceResults: Decodable {
+struct RaceResults: Codable {
     let mrData: MRData?
     
     private enum CodingKeys: String, CodingKey {
@@ -57,7 +57,7 @@ struct RaceResults: Decodable {
     }
 }
 
-struct StandingsTable: Decodable {
+struct StandingsTable: Codable {
     let season: String?
     let standingsLists: [StandingsList]?
 
@@ -67,7 +67,7 @@ struct StandingsTable: Decodable {
     }
 }
 
-struct StandingsList: Decodable {
+struct StandingsList: Codable {
     let season: String?
     let round: String?
     let constructorStandings: [ConstructorStanding]?
@@ -79,7 +79,7 @@ struct StandingsList: Decodable {
     }
 }
 
-struct ConstructorStanding: Decodable, Hashable {
+struct ConstructorStanding: Codable, Hashable {
     let position: String?
     let positionText: String?
     let points: String?
@@ -95,7 +95,7 @@ struct ConstructorStanding: Decodable, Hashable {
     }
 }
 
-struct Constructor: Decodable, Hashable {
+struct Constructor: Codable, Hashable {
     let constructorId: String?
     let url: String?
     let name: String?
@@ -109,7 +109,7 @@ struct Constructor: Decodable, Hashable {
     }
 }
 
-struct RaceTable: Decodable {
+struct RaceTable: Codable {
     let races: [Race]?
     let season: String?
     let round: String?
@@ -121,7 +121,7 @@ struct RaceTable: Decodable {
     }
 }
 
-struct Race: Decodable {
+struct Race: Codable {
     let raceName: String?
     let circuit: Circuit?
     let date: String?
@@ -139,7 +139,7 @@ struct Race: Decodable {
     }
 }
 
-struct Circuit: Decodable {
+struct Circuit: Codable {
     let circuitName: String?
     let location: Location?
     
@@ -149,7 +149,7 @@ struct Circuit: Decodable {
     }
 }
 
-struct Location: Decodable {
+struct Location: Codable {
     let locality: String?
     let country: String?
     let lat: String?
@@ -163,7 +163,7 @@ struct Location: Decodable {
     }
 }
 
-struct Result: Decodable {
+struct Result: Codable {
     let number: String?
     let position: String?
     let positionText: String?
@@ -192,7 +192,7 @@ struct Result: Decodable {
 }
 
 
-struct Driver: Decodable {
+struct Driver: Codable {
     let driverId: String?
     let permanentNumber: String?
     let code: String?
@@ -214,7 +214,7 @@ struct Driver: Decodable {
     }
 }
 
-struct FastestLap: Decodable {
+struct FastestLap: Codable {
     let lap: String?
     let time: LapTime?
     let averageSpeed: AverageSpeed?
@@ -226,7 +226,7 @@ struct FastestLap: Decodable {
     }
 }
 
-struct LapTime: Decodable {
+struct LapTime: Codable {
     let time: String?
 
     enum CodingKeys: String, CodingKey {
@@ -234,7 +234,7 @@ struct LapTime: Decodable {
     }
 }
 
-struct AverageSpeed: Decodable {
+struct AverageSpeed: Codable {
     let units: String?
     let speed: String?
 
@@ -245,7 +245,7 @@ struct AverageSpeed: Decodable {
 }
 
 // New struct for Lap
-struct Lap: Decodable {
+struct Lap: Codable {
     let number: String?
     let timings: [Timing]?
 
@@ -256,7 +256,7 @@ struct Lap: Decodable {
 }
 
 // New struct for Timing
-struct Timing: Decodable {
+struct Timing: Codable {
     let driverId: String?
     let position: String?
     let time: String?
