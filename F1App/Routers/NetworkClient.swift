@@ -37,7 +37,7 @@ class NetworkClient {
         UserDefaults.standard.set(data, forKey: key)
     }
     
-    func worldDriversChampionshipStandings(seasonYear: String) async throws -> [DriverStanding] {
+    @MainActor func worldDriversChampionshipStandings(seasonYear: String) async throws -> [DriverStanding] {
         if let cachedData = getCachedData(for: seasonYear, queryKey: "worldDriversChampionshipStandings") {
             do {
                 let json = try JSONSerialization.jsonObject(with: cachedData, options: []) as? [String: Any]
@@ -56,7 +56,6 @@ class NetworkClient {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
             
             if seasonYear != "2024" {
-//                UserDefaults.standard.set(data, forKey: "cache_worldDriversChampionshipStandings_\(seasonYear)")
                 saveCachedData(data, for: seasonYear, queryKey: "cache_worldDriversChampionshipStandings_")
             }
 

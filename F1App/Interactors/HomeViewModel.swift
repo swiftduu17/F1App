@@ -79,10 +79,8 @@ class HomeViewModel: ObservableObject {
         _ = await (loadRacesTask, loadDriverStandingsTask, loadConstructorStandingsTask)
 
         async let getDriverImgsTask: () = getDriverImgs()
-//        async let getConstructorImgsTask: () = getConstructorImages()
 
         _ = await getDriverImgsTask
-//        _ = await getConstructorImgsTask
 
         async let loadQuickLookResults: () = loadRaceResultsForYear(year: seasonYear)
         await loadQuickLookResults
@@ -103,15 +101,14 @@ class HomeViewModel: ObservableObject {
     }
     
     @MainActor func getDriverImgs() async {
+        let nc = self.networkClient
         for index in driverStandings.indices {
-            do {
-                let driverImg = try await networkClient.fetchDriverImgFromWikipedia(
+            Task { [weak self] in
+                guard let self else { return }
+                let driverImg = try await nc.fetchDriverImgFromWikipedia(
                     givenName: self.driverStandings[safe: index]?.givenName ?? "⏳",
                     familyName: self.driverStandings[safe: index]?.familyName ?? "⏳")
                 self.driverStandings[index].imageUrl = driverImg
-            } catch {
-                // Handle errors such as display an error message
-                print("Drivers query failed to gather data...")
             }
         }
     }
