@@ -56,7 +56,8 @@ class NetworkClient {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
             
             if seasonYear != "2024" {
-                UserDefaults.standard.set(data, forKey: "cache_worldDriversChampionshipStandings_\(seasonYear)")
+//                UserDefaults.standard.set(data, forKey: "cache_worldDriversChampionshipStandings_\(seasonYear)")
+                saveCachedData(data, for: seasonYear, queryKey: "cache_worldDriversChampionshipStandings_")
             }
 
             return processDriverStandings(json, seasonYear: seasonYear)
