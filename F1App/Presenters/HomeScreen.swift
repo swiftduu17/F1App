@@ -118,9 +118,9 @@ struct HomeScreen: View {
                         DriversCards(
                             wdcPosition: "WDC Position: \(driverStanding.position)",
                             wdcPoints: "Points \(driverStanding.points)",
-                            constructorName: "\(driverStanding.teamNames)",
-                            image: driverStanding.imageUrl,
-                            items: ["\(driverStanding.givenName)\n\(driverStanding.familyName)"],
+                            constructorName: "\(driverStanding.teamNames ?? "Team")",
+                            image: driverStanding.imageUrl ?? "🏎️",
+                            items: ["\(driverStanding.givenName ?? "First Name")\n\(driverStanding.familyName ?? "Last Name")"],
                             seasonYearSelected: viewModel.seasonYear
                         )
                     }
