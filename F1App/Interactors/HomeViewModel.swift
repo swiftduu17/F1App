@@ -79,9 +79,10 @@ class HomeViewModel: ObservableObject {
         _ = await (loadRacesTask, loadDriverStandingsTask, loadConstructorStandingsTask)
 
         async let getDriverImgsTask: () = getDriverImgs()
-        async let getConstructorImgsTask: () = getConstructorImages()
+//        async let getConstructorImgsTask: () = getConstructorImages()
 
-        _ = await (getDriverImgsTask, getConstructorImgsTask)
+        _ = await getDriverImgsTask
+//        _ = await getConstructorImgsTask
 
         async let loadQuickLookResults: () = loadRaceResultsForYear(year: seasonYear)
         await loadQuickLookResults
@@ -104,8 +105,8 @@ class HomeViewModel: ObservableObject {
         for index in driverStandings.indices {
             do {
                 let driverImg = try await F1ApiRoutes.fetchDriverImgFromWikipedia(
-                    givenName: self.driverStandings[index].givenName,
-                    familyName: self.driverStandings[index].familyName)
+                    givenName: self.driverStandings[safe: index]?.givenName ?? "⏳",
+                    familyName: self.driverStandings[safe: index]?.familyName ?? "⏳")
                 self.driverStandings[index].imageUrl = driverImg
             } catch {
                 // Handle errors such as display an error message
@@ -115,12 +116,15 @@ class HomeViewModel: ObservableObject {
     }
     
     @MainActor func loadConstructorStandings(seasonYear: String) async {
+        let nc = self.networkClient
         isLoadingConstructors = true
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
-                let standings = try await F1ApiRoutes.getConstructorStandings(seasonYear: self.seasonYear)
+                let standings = try await nc.getConstructorStandings(seasonYear: self.seasonYear)
                 constructorStandings.removeAll()
                 self.constructorStandings.append(contentsOf: standings.unique(by: { $0.constructor?.name ?? ""}))
+                await self.getConstructorImages()
             } catch {
                 print("Constructors query failed to gather data...")
             }
@@ -129,15 +133,19 @@ class HomeViewModel: ObservableObject {
     }
     
     @MainActor func getConstructorImages() async {
-        for index in constructorStandings.indices {
-            do {
-                let constructorImg = try await F1ApiRoutes.fetchConstructorImageFromWikipedia(constructorName: self.constructorStandings[safe: index]?.constructor?.name ?? "Unable to get constructor name")
-                constructorImages.append(constructorImg)
-                print(self.constructorStandings[safe: index]?.constructor?.name ?? "Unable to get constructor name")
-            } catch {
-                // Handle errors such as display an error message
-                constructorImages.append("bad_url")
-                print("Constructors wikipedia fetch failed to gather data...\(error)")
+        isLoadingConstructors = true
+        let constructorLoop = constructorStandings.indices
+        Task { [weak self] in
+            for index in constructorLoop {
+                do {
+                    let constructorImg = try await F1ApiRoutes.fetchConstructorImageFromWikipedia(constructorName: self?.constructorStandings[safe: index]?.constructor?.name ?? "Unable to get constructor name")
+                    self?.constructorImages.append(constructorImg)
+                    print(self?.constructorStandings[safe: index]?.constructor?.name ?? "Unable to get constructor name")
+                } catch {
+                    // Handle errors such as display an error message
+                    self?.constructorImages.append("bad_url")
+                    print("Constructors wikipedia fetch failed to gather data...\(error)")
+                }
             }
         }
     }

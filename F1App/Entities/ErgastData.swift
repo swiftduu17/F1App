@@ -71,11 +71,13 @@ struct StandingsList: Codable {
     let season: String?
     let round: String?
     let constructorStandings: [ConstructorStanding]?
+    let driverStandings: [DriverStanding]?
 
     enum CodingKeys: String, CodingKey {
         case season
         case round
         case constructorStandings = "ConstructorStandings"
+        case driverStandings = "DriverStandings"
     }
 }
 
@@ -127,7 +129,7 @@ struct Race: Codable {
     let date: String?
     let time: String?
     let results: [Result]?
-    let laps: [Lap]?  // Add this line to include Laps
+    let laps: [Lap]?
 
     private enum CodingKeys: String, CodingKey {
         case raceName = "raceName"
@@ -244,7 +246,6 @@ struct AverageSpeed: Codable {
     }
 }
 
-// New struct for Lap
 struct Lap: Codable {
     let number: String?
     let timings: [Timing]?
@@ -255,7 +256,6 @@ struct Lap: Codable {
     }
 }
 
-// New struct for Timing
 struct Timing: Codable {
     let driverId: String?
     let position: String?
@@ -269,6 +269,24 @@ struct DriverStanding: Codable, Hashable {
     var points: String
     var teamNames: String
     var imageUrl: String
+}
+
+struct DriverStandingResponse: Codable {
+    let position: String?
+    let positionText: String?
+    let points: String?
+    let wins: String?
+    let driver: Driver?
+    let constructor: [Constructor?]
+    
+    enum CodingKeys: String, CodingKey {
+        case position
+        case positionText
+        case points
+        case wins
+        case driver = "Driver"
+        case constructor = "Constructors"
+    }
 }
 
 struct SeasonStanding: Codable, Hashable {

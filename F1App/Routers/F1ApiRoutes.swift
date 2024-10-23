@@ -9,10 +9,9 @@ import Foundation
 import Get
 
 struct F1ApiRoutes  {
-    typealias FoundationData = Foundation.Data
     static let baseUrl = URL(string: "https://ergast.com/api/f1/")!
     
-    static func retrieveCachedData(for seasonYear: String, queryKey: String) -> FoundationData? {
+    static func retrieveCachedData(for seasonYear: String, queryKey: String) -> Data? {
         let key = "cache_\(queryKey)_\(seasonYear)"
         if let cachedData = UserDefaults.standard.data(forKey: key) {
             return cachedData
@@ -84,44 +83,6 @@ struct F1ApiRoutes  {
         return thumbnailURL
     }
 
-    static func getConstructorStandings(seasonYear: String) async throws -> [ConstructorStanding] {
-        // Check the cache first
-        if let cachedData = retrieveCachedData(for: seasonYear, queryKey: "constructorStandings") {
-            do {
-                let root = try JSONDecoder().decode(Root.self, from: cachedData)
-                print("Successfully gathered data from cache")
-                return processConstructorStandings(root: root)
-            } catch {
-                print("Error decoding cached data: \(error)")
-                // Continue to fetch fresh data if cache is corrupted
-            }
-        }
-
-        // Proceed with network call
-        let urlString = "https://ergast.com/api/f1/\(seasonYear)/constructorStandings.json?limit=100"
-        guard let url = URL(string: urlString) else {
-            throw URLError(.badURL)
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let root = try JSONDecoder().decode(Root.self, from: data)
-        
-        if seasonYear != "\(Calendar.current.component(.year, from: Date()))" {
-            UserDefaults.standard.set(data, forKey: "cache_constructorStandings_\(seasonYear)")
-        }
-
-        return processConstructorStandings(root: root)
-    }
-
-    private static func processConstructorStandings(root: Root) -> [ConstructorStanding] {
-        guard let standingsList = root.mrData?.standingsTable?.standingsLists?.first else {
-            print("Standings table not found")
-            return []
-        }
-        
-        return standingsList.constructorStandings ?? []
-    }
-
     static func worldDriversChampionshipStandings(seasonYear: String) async throws -> [DriverStanding] {
         if let cachedData = retrieveCachedData(for: seasonYear, queryKey: "worldDriversChampionshipStandings") {
             do {
@@ -133,7 +94,7 @@ struct F1ApiRoutes  {
             }
         } else {
             // if no cache was found lets make a network requerst
-            guard let url = URL(string: "https://ergast.com/api/f1/\(seasonYear)/driverStandings.json") else {
+            guard let url = URL(string: "\(baseUrl)\(seasonYear)/driverStandings.json") else {
                 throw URLError(.badURL)
             }
 
