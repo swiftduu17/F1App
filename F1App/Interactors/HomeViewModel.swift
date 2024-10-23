@@ -91,12 +91,13 @@ class HomeViewModel: ObservableObject {
     @MainActor func loadDriverStandings(seasonYear: String) async {
         isLoadingDrivers = true
         do {
-            let standings = try await F1ApiRoutes.worldDriversChampionshipStandings(seasonYear: self.seasonYear)
+            let standings = try await networkClient.worldDriversChampionshipStandings(seasonYear: self.seasonYear)
             driverStandings.removeAll()
             driverStandings.append(contentsOf: standings.unique(by: {$0.familyName}))
             // Update UI or state with standings
         } catch {
             // Handle errors such as display an error message
+            print("Error gathering driver standings... \(error.localizedDescription)")
         }
         isLoadingDrivers = false
     }
@@ -104,7 +105,7 @@ class HomeViewModel: ObservableObject {
     @MainActor func getDriverImgs() async {
         for index in driverStandings.indices {
             do {
-                let driverImg = try await F1ApiRoutes.fetchDriverImgFromWikipedia(
+                let driverImg = try await networkClient.fetchDriverImgFromWikipedia(
                     givenName: self.driverStandings[safe: index]?.givenName ?? "⏳",
                     familyName: self.driverStandings[safe: index]?.familyName ?? "⏳")
                 self.driverStandings[index].imageUrl = driverImg
@@ -133,12 +134,13 @@ class HomeViewModel: ObservableObject {
     }
     
     @MainActor func getConstructorImages() async {
+        let nc = self.networkClient
         isLoadingConstructors = true
         let constructorLoop = constructorStandings.indices
         Task { [weak self] in
             for index in constructorLoop {
                 do {
-                    let constructorImg = try await F1ApiRoutes.fetchConstructorImageFromWikipedia(constructorName: self?.constructorStandings[safe: index]?.constructor?.name ?? "Unable to get constructor name")
+                    let constructorImg = try await nc.fetchConstructorImageFromWikipedia(constructorName: self?.constructorStandings[safe: index]?.constructor?.name ?? "Unable to get constructor name")
                     self?.constructorImages.append(constructorImg)
                     print(self?.constructorStandings[safe: index]?.constructor?.name ?? "Unable to get constructor name")
                 } catch {
