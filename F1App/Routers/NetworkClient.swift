@@ -65,7 +65,18 @@ class NetworkClient {
                 print("Error -- \(error)")
             }
         }
-        return [DriverStanding(givenName: "", familyName: "", position: "", points: "", teamNames: "", imageUrl: "", driver: nil, constructor: [nil])]
+        return [
+            DriverStanding(
+                givenName: "",
+                familyName: "",
+                position: "",
+                points: "",
+                teamNames: "",
+                imageUrl: "",
+                driver: nil,
+                constructor: [nil]
+            )
+        ]
     }
 
     func processDriverStandings(_ json: Root, seasonYear: String) -> [DriverStanding] {
@@ -75,28 +86,11 @@ class NetworkClient {
         }
 
         var results: [DriverStanding] = []
-        var seenDrivers: Set<String> = Set()
 
         for standingsList in standingsLists {
             let driverStandings = standingsList.driverStandings ?? []
             for driverStanding in driverStandings {
-                let givenName = driverStanding.givenName
-                let familyName = driverStanding.familyName
-                let position = driverStanding.position
-                let points = driverStanding.points
 
-                    let driverIdentifier = "\(givenName) \(familyName)"
-                    
-                    // Check if the driver has already been processed
-//                    if seenDrivers.contains(driverIdentifier) {
-//                        print("DRIVER SEEN < CONTINUE >")
-//                        continue
-//                    }
-//
-//                    // Mark this driver as seen
-//                    seenDrivers.insert(driverIdentifier)
-
-                let teamNames = driverStanding.teamNames
                 let standing = DriverStanding(
                     givenName: driverStanding.driver?.givenName,
                     familyName: driverStanding.driver?.familyName,
@@ -112,7 +106,7 @@ class NetworkClient {
                 results.append(standing)
             }
         }
-        print("RESULTS COUNT - \(results)")
+        print("RESULTS COUNT - \(results.count)")
         return results
     }
 
