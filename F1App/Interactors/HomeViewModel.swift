@@ -74,21 +74,12 @@ import SwiftUI
     }
 
     @MainActor private func reloadDataForNewSeason() async {
-        Task {
-            clearData()
-            await loadAllRacesForSeason(year: seasonYear)
-            async let loadDriverStandingsTask: () = loadDriverStandings(seasonYear: seasonYear)
-            async let loadConstructorStandingsTask: () = loadConstructorStandings(seasonYear: seasonYear)
-
-            _ = await (loadDriverStandingsTask, loadConstructorStandingsTask)
-
-            async let getDriverImgsTask: () = getDriverImgs()
-
-            _ = await getDriverImgsTask
-
-            async let loadQuickLookResults: () = loadRaceResultsForYear(year: seasonYear)
-            await loadQuickLookResults
-        }
+        clearData()
+        await loadAllRacesForSeason(year: seasonYear)
+        await loadDriverStandings(seasonYear: seasonYear)
+        await loadConstructorStandings(seasonYear: seasonYear)
+        await getDriverImgs()
+        await loadRaceResultsForYear(year: seasonYear)
     }
 
     @MainActor func loadDriverStandings(seasonYear: String) async {
