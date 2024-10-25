@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-@MainActor class HomeViewModel: ObservableObject {
+@MainActor
+class HomeViewModel: ObservableObject {
     private let networkClient: NetworkClient
     @Published var raceResultViewModel: RaceResultViewModel? = nil
     @Published var isLoadingGrandPrix = false
@@ -33,35 +34,39 @@ import SwiftUI
             }
         }
     }
-
+    
     enum Constant: String {
         case homescreenTitle = "Grid Pulse"
         case wdcLabel = "World Drivers' Championship Standings"
         case grandPrixLabel = "Grand Prix Results"
     }
-
+    
     init(
         networkClient: NetworkClient,
         seasonYear: String
     ) {
         self.networkClient = networkClient
+        self.seasonYear = seasonYear
         Task {
-            self.seasonYear = seasonYear
             await initializeData()
         }
     }
-
+    
     private func initializeData() async {
         self.raceResultViewModel = RaceResultViewModel()
     }
-
+    
     private func returnYear() -> Int {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy"
         return Int(dateFormatter.string(from: Date())) ?? 2024
     }
     
-    private func clearData() {
+    func clearRaceResults() {
+        raceResults2.removeAll()
+    }
+    
+    @MainActor private func reloadDataForNewSeason() async {
         driverStandings.removeAll()
         constructorStandings.removeAll()
         constructorImages.removeAll()
@@ -71,10 +76,6 @@ import SwiftUI
         raceWinner.removeAll()
         races.removeAll()
 
-    }
-
-    @MainActor private func reloadDataForNewSeason() async {
-        clearData()
         async let loadRacesTask: () = loadAllRacesForSeason(year: seasonYear)
         async let loadDriverStandingsTask: () = loadDriverStandings(seasonYear: seasonYear)
         async let loadConstructorStandingsTask: () = loadConstructorStandings(seasonYear: seasonYear)
@@ -88,7 +89,7 @@ import SwiftUI
         async let loadQuickLookResults: () = loadRaceResultsForYear(year: seasonYear)
         await loadQuickLookResults
     }
-
+    
     @MainActor func loadDriverStandings(seasonYear: String) async {
         isLoadingDrivers = true
         do {
@@ -102,7 +103,7 @@ import SwiftUI
         }
         isLoadingDrivers = false
     }
-
+    
     @MainActor func getDriverImgs() async {
         let nc = self.networkClient
         for index in driverStandings.indices {
@@ -115,7 +116,7 @@ import SwiftUI
             }
         }
     }
-
+    
     @MainActor func loadConstructorStandings(seasonYear: String) async {
         let nc = self.networkClient
         isLoadingConstructors = true
@@ -132,7 +133,7 @@ import SwiftUI
             isLoadingConstructors = false
         }
     }
-
+    
     @MainActor func getConstructorImages() async {
         let nc = self.networkClient
         isLoadingConstructors = true
@@ -151,7 +152,7 @@ import SwiftUI
             }
         }
     }
-
+    
     @MainActor func loadAllRacesForSeason(year: String) async {
         let nc = self.networkClient
         isLoadingGrandPrix = true
@@ -167,7 +168,7 @@ import SwiftUI
             isLoadingGrandPrix = false
         }
     }
-
+    
     @MainActor func loadRaceResultsForYear(year: String) async {
         let nc = self.networkClient
         isLoadingRaceResults = true
@@ -200,7 +201,7 @@ import SwiftUI
 
         isLoadingRaceResults = false
     }
-
+    
     @MainActor func fetchRaceResults(season: String, round: String) async {
         let nc = self.networkClient
         Task { [weak self] in
